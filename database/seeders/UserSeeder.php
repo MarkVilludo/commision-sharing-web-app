@@ -39,7 +39,7 @@ class UserSeeder extends Seeder
     {
         $calculator = new CommissionCalculator;
         /** Sample monthly profit for seeded commission/remaining fields (shares use pool of 15). */
-        $sampleGrossTotal = 100_000_000.00;
+        $sampleGrossTotal = 15.00;
 
         foreach (self::USERS as $row) {
             $type = UserType::query()->where('name', $row['user_type_name'])->firstOrFail();
