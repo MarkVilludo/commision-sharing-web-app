@@ -3,8 +3,10 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\UserType;
 use App\Services\CommissionCalculator;
 use App\Services\CommissionMonthReportRecorder;
+use App\Services\DepartmentSalaryBudgetUpdater;
 use App\Services\ProfitPool;
 use App\Services\UserTypeCommissionTotals;
 use Carbon\Carbon;
@@ -63,5 +65,44 @@ class CommissionDistributionController extends Controller
             ]))
             ->with('last_gross_total', $gross)
             ->with('last_report_month', $reportMonth);
+    }
+
+    public function updateSalaries(Request $request, DepartmentSalaryBudgetUpdater $salaryUpdater): RedirectResponse
+    {
+        $typeIds = UserType::query()
+            ->whereHas('recipientUsers')
+            ->pluck('id')
+            ->all();
+
+        if ($typeIds === []) {
+            return redirect()
+                ->route('admin.commissions.index')
+                ->with('success', __('Department salary budgets updated.'));
+        }
+
+        $rules = [
+            'salary_budget' => ['required', 'array'],
+        ];
+        foreach ($typeIds as $id) {
+            $rules['salary_budget.'.$id] = ['required', 'numeric', 'min:0'];
+        }
+
+        $validated = $request->validate($rules);
+
+        /** @var array<int|string, float|int|string> $budgets */
+        $budgets = $validated['salary_budget'];
+        $filtered = [];
+        foreach ($typeIds as $id) {
+            $value = $budgets[$id] ?? $budgets[(string) $id] ?? null;
+            if ($value !== null) {
+                $filtered[(int) $id] = $value;
+            }
+        }
+
+        $salaryUpdater->apply($filtered);
+
+        return redirect()
+            ->route('admin.commissions.index')
+            ->with('success', __('Department salary budgets updated.'));
     }
 }

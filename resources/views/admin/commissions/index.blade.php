@@ -79,7 +79,10 @@
                     @if ($typeSummaries->isEmpty())
                         <p class="text-sm text-gray-600">{{ __('No user types found.') }}</p>
                     @else
-                        <div class="overflow-x-auto -mx-6 sm:mx-0">
+                        <form method="POST" action="{{ route('admin.commissions.update-salaries') }}" class="space-y-4">
+                            @csrf
+                            <p class="text-sm text-gray-600">{{ __('Edit total salary (budget) per department, then save. If a department has several recipients, the total is split in proportion to their current salaries (or equally if all are zero).') }}</p>
+                            <div class="overflow-x-auto -mx-6 sm:mx-0">
                             <table class="min-w-full divide-y divide-gray-200 text-sm">
                                 <thead class="bg-gray-50">
                                     <tr>
@@ -102,7 +105,21 @@
                                                 {{ number_format($row['commission_total'], 2) }}
                                             </td>
                                             <td class="px-4 py-3 text-right tabular-nums text-gray-900">
-                                                {{ number_format($row['salary_total'], 2) }}
+                                                @if ($row['recipient_count'] > 0)
+                                                    <label for="salary_budget_{{ $type->id }}" class="sr-only">{{ __('Total salary (budget)') }} — {{ $type->name }}</label>
+                                                    <x-text-input
+                                                        id="salary_budget_{{ $type->id }}"
+                                                        name="salary_budget[{{ $type->id }}]"
+                                                        type="number"
+                                                        step="0.01"
+                                                        min="0"
+                                                        class="block w-full max-w-[11rem] ml-auto text-right tabular-nums"
+                                                        :value="old('salary_budget.'.$type->id, number_format($row['salary_total'], 2, '.', ''))"
+                                                    />
+                                                    <x-input-error class="mt-1 justify-end flex" :messages="$errors->get('salary_budget.'.$type->id)" />
+                                                @else
+                                                    <span class="text-gray-400">—</span>
+                                                @endif
                                             </td>
                                           
                                             <td class="px-4 py-3 text-right tabular-nums text-gray-900">
@@ -126,7 +143,13 @@
                                     </tr>
                                 </tfoot>
                             </table>
-                        </div>
+                            </div>
+                            <div class="flex flex-wrap items-center gap-3">
+                                <x-secondary-button type="submit">
+                                    {{ __('Save department salaries') }}
+                                </x-secondary-button>
+                            </div>
+                        </form>
                     @endif
                 </div>
             </div>

@@ -28,6 +28,16 @@ test('non-admin users cannot submit commission distribution', function () {
         ->assertForbidden();
 });
 
+test('non-admin users cannot update department salaries', function () {
+    $user = User::factory()->create(['is_admin' => false]);
+
+    $this->actingAs($user)
+        ->post(route('admin.commissions.update-salaries'), [
+            'salary_budget' => [],
+        ])
+        ->assertForbidden();
+});
+
 test('admin can view commissions page', function () {
     $admin = User::factory()->create(['is_admin' => true]);
 
@@ -36,7 +46,66 @@ test('admin can view commissions page', function () {
         ->assertOk()
         ->assertSee(__('Commission distribution'))
         ->assertSee(__('By user type'))
-        ->assertSee(__('Overall totals'));
+        ->assertSee(__('Overall totals'))
+        ->assertSee(__('Save department salaries'));
+});
+
+test('admin can update department salary budget for a single recipient', function () {
+    $type = UserType::factory()->create(['percentage' => 10.0]);
+    $admin = User::factory()->create(['is_admin' => true]);
+    $recipient = User::factory()->create([
+        'is_admin' => false,
+        'user_type_id' => $type->id,
+        'salary' => 1000,
+        'commissions' => 100,
+        'remaining_to_pay' => 900,
+    ]);
+
+    $this->actingAs($admin)
+        ->post(route('admin.commissions.update-salaries'), [
+            'salary_budget' => [
+                (string) $type->id => 5000,
+            ],
+        ])
+        ->assertRedirect(route('admin.commissions.index', absolute: false));
+
+    $recipient->refresh();
+    expect((float) $recipient->salary)->toBe(5000.0);
+    expect((float) $recipient->commissions)->toBe(100.0);
+    expect((float) $recipient->remaining_to_pay)->toBe(4900.0);
+});
+
+test('admin can set shared department budget across multiple recipients proportionally', function () {
+    $type = UserType::factory()->create(['percentage' => 5.0]);
+    $admin = User::factory()->create(['is_admin' => true]);
+    $a = User::factory()->create([
+        'is_admin' => false,
+        'user_type_id' => $type->id,
+        'salary' => 30,
+        'commissions' => 0,
+        'remaining_to_pay' => 0,
+    ]);
+    User::factory()->create([
+        'is_admin' => false,
+        'user_type_id' => $type->id,
+        'salary' => 70,
+        'commissions' => 0,
+        'remaining_to_pay' => 0,
+    ]);
+
+    $this->actingAs($admin)
+        ->post(route('admin.commissions.update-salaries'), [
+            'salary_budget' => [
+                (string) $type->id => 1000,
+            ],
+        ])
+        ->assertSessionHasNoErrors();
+
+    $a->refresh();
+    $users = User::query()->commissionRecipients()->where('user_type_id', $type->id)->orderBy('id')->get();
+    expect((float) $users->sum('salary'))->toBe(1000.0);
+    expect((float) $users[0]->salary)->toBe(300.0);
+    expect((float) $users[1]->salary)->toBe(700.0);
 });
 
 test('admin can submit monthly profit and persist recipient commissions', function () {

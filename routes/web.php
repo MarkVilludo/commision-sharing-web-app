@@ -16,6 +16,7 @@ Route::get('/dashboard', function () {
 Route::middleware(['auth', 'verified', 'admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/commissions', [CommissionDistributionController::class, 'index'])->name('commissions.index');
     Route::post('/commissions', [CommissionDistributionController::class, 'store'])->name('commissions.store');
+    Route::post('/commissions/salaries', [CommissionDistributionController::class, 'updateSalaries'])->name('commissions.update-salaries');
 
     Route::get('/commission-months', [CommissionMonthReportController::class, 'index'])->name('commission-months.index');
     Route::get('/commission-months/{report}', [CommissionMonthReportController::class, 'show'])->name('commission-months.show');

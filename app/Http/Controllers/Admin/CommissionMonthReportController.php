@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\CommissionMonthReport;
-use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 class CommissionMonthReportController extends Controller
@@ -12,11 +11,13 @@ class CommissionMonthReportController extends Controller
     public function index(): View
     {
         $reports = CommissionMonthReport::query()
+            ->withSum('lines', 'total_salary')
             ->orderByDesc('report_month')
             ->get();
 
         $listTotals = [
             'profit' => (float) $reports->sum(fn (CommissionMonthReport $r) => (float) $r->gross_total),
+            'salary' => (float) $reports->sum(fn (CommissionMonthReport $r) => (float) ($r->lines_sum_total_salary ?? 0)),
             'commission' => (float) $reports->sum(fn (CommissionMonthReport $r) => (float) $r->total_commission),
             'remaining' => (float) $reports->sum(fn (CommissionMonthReport $r) => (float) $r->total_remaining),
         ];

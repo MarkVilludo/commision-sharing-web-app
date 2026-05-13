@@ -23,6 +23,7 @@
                                     <tr>
                                         <th scope="col" class="px-4 py-3 text-left font-semibold text-gray-700">{{ __('Month') }}</th>
                                         <th scope="col" class="px-4 py-3 text-right font-semibold text-gray-700">{{ __('Monthly profit') }}</th>
+                                        <th scope="col" class="px-4 py-3 text-right font-semibold text-gray-700">{{ __('Total salary (budget)') }}</th>
                                         <th scope="col" class="px-4 py-3 text-right font-semibold text-gray-700">{{ __('Total commission') }}</th>
                                         <th scope="col" class="px-4 py-3 text-right font-semibold text-gray-700">{{ __('Total remaining to pay') }}</th>
                                         <th scope="col" class="px-4 py-3 text-right font-semibold text-gray-700"></th>
@@ -36,6 +37,9 @@
                                             </td>
                                             <td class="px-4 py-3 text-right tabular-nums text-gray-900">
                                                 {{ number_format((float) $report->gross_total, 2) }}
+                                            </td>
+                                            <td class="px-4 py-3 text-right tabular-nums text-gray-900">
+                                                {{ number_format((float) ($report->lines_sum_total_salary ?? 0), 2) }}
                                             </td>
                                             <td class="px-4 py-3 text-right tabular-nums text-gray-900">
                                                 {{ number_format((float) $report->total_commission, 2) }}
@@ -55,8 +59,9 @@
                                     <tfoot class="bg-gray-100 border-t-2 border-gray-300">
                                         <tr>
                                             <th scope="row" class="px-4 py-3 text-left font-semibold text-gray-900">{{ __('Overall totals (listed months)') }}</th>
-                                            <td class="px-4 py-3 text-right tabular-nums font-semibold text-gray-900">{{ number_format($listTotals['profit'], 2) }}</td>
+                                            <td class="px-4 py-3 text-right tabular-nums font-semibold text-gray-900">{{ number_format($listTotals['salary'], 2) }}</td>
                                             <td class="px-4 py-3 text-right tabular-nums font-semibold text-gray-900">{{ number_format($listTotals['commission'], 2) }}</td>
+                                            <td class="px-4 py-3 text-right tabular-nums font-semibold text-gray-900">{{ number_format($listTotals['profit'], 2) }}</td>
                                             <td class="px-4 py-3 text-right tabular-nums font-semibold text-gray-900">{{ number_format($listTotals['remaining'], 2) }}</td>
                                             <td class="px-4 py-3"></td>
                                         </tr>
