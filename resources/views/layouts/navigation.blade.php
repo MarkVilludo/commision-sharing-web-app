@@ -22,6 +22,10 @@
                         <x-nav-link :href="route('admin.commission-months.index')" :active="request()->routeIs('admin.commission-months.*')">
                             {{ __('Monthly reports') }}
                         </x-nav-link>
+                    @else
+                        <x-nav-link :href="route('commission-settings.edit')" :active="request()->routeIs('commission-settings.*')">
+                            {{ __('Salary & profit share') }}
+                        </x-nav-link>
                     @endif
                 </div>
             </div>
@@ -45,6 +49,11 @@
                         <x-dropdown-link :href="route('profile.edit')">
                             {{ __('Profile') }}
                         </x-dropdown-link>
+                        @if (! Auth::user()->is_admin)
+                            <x-dropdown-link :href="route('commission-settings.edit')">
+                                {{ __('Salary & profit share') }}
+                            </x-dropdown-link>
+                        @endif
 
                         <!-- Authentication -->
                         <form method="POST" action="{{ route('logout') }}">
@@ -85,6 +94,10 @@
                 <x-responsive-nav-link :href="route('admin.commission-months.index')" :active="request()->routeIs('admin.commission-months.*')">
                     {{ __('Monthly reports') }}
                 </x-responsive-nav-link>
+            @else
+                <x-responsive-nav-link :href="route('commission-settings.edit')" :active="request()->routeIs('commission-settings.*')">
+                    {{ __('Salary & profit share') }}
+                </x-responsive-nav-link>
             @endif
         </div>
 
@@ -99,6 +112,11 @@
                 <x-responsive-nav-link :href="route('profile.edit')">
                     {{ __('Profile') }}
                 </x-responsive-nav-link>
+                @if (! Auth::user()->is_admin)
+                    <x-responsive-nav-link :href="route('commission-settings.edit')">
+                        {{ __('Salary & profit share') }}
+                    </x-responsive-nav-link>
+                @endif
 
                 <!-- Authentication -->
                 <form method="POST" action="{{ route('logout') }}">
